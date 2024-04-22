@@ -1,6 +1,9 @@
 use anyhow::{self};
 use clap::Parser;
-use rcli::{opts, process};
+use rcli::{
+    opts,
+    process::{csv_convert, gen_pass},
+};
 
 fn main() -> anyhow::Result<()> {
     let opts = opts::Opts::parse();
@@ -17,11 +20,11 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
                 format!("output.{}", csv_opts.format)
             };
 
-            process::process_csv(&csv_opts.input, output, csv_opts.format)
+            csv_convert::process_csv(&csv_opts.input, output, csv_opts.format)
         }
         opts::SubCommand::GenPass(opts) => {
             println!("generate pwd opts: {:?}", opts);
-            anyhow::Ok(())
+            gen_pass::generate_password(opts)
         }
     }
 }
