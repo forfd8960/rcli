@@ -1,32 +1,47 @@
 use rand::seq::SliceRandom;
+use zxcvbn::zxcvbn;
 
 use crate::opts::GenPassOpts;
 
+const UPPERCHARS: &[u8] = b"ABCDEFGHJKLMNOPQRSTUVWXYZ";
+const LOWERCHARS: &[u8] = b"abcdefghijkmnopqrstuvwxyz";
+const NUM: &[u8] = b"123456789";
+const SYMBOL: &[u8] = b"!@#$%^&*_";
+
 pub fn generate_password(opts: GenPassOpts) -> anyhow::Result<()> {
     let mut rng = rand::thread_rng();
-    let mut password = String::new();
+    let mut password = Vec::new();
     let mut chars = Vec::new();
 
     if opts.uppercase {
-        chars.extend_from_slice(b"ABCDEFGHJKLMNOPQRSTUVWXYZ");
+        chars.extend_from_slice(UPPERCHARS);
+        password.push(*UPPERCHARS.choose(&mut rng).expect("not empty"));
     }
 
     if opts.lowercase {
-        chars.extend_from_slice(b"abcdefghijkmnopqrstuvwxyz");
+        chars.extend_from_slice(LOWERCHARS);
+        password.push(*LOWERCHARS.choose(&mut rng).expect("not empty"));
     }
     if opts.number {
-        chars.extend_from_slice(b"123456789");
+        chars.extend_from_slice(NUM);
+        password.push(*NUM.choose(&mut rng).expect("not empty"));
     }
 
     if opts.symbol {
-        chars.extend_from_slice(b"!@#$%^&*_");
+        chars.extend_from_slice(SYMBOL);
+        password.push(*SYMBOL.choose(&mut rng).expect("not empty"));
     }
 
-    for _ in 0..opts.length {
+    for _ in 0..(opts.length as usize - password.len()) {
         let c = chars.choose(&mut rng).expect("char is not empty");
-        password.push(*c as char);
+        password.push(*c);
     }
 
-    println!("{}", password);
+    password.shuffle(&mut rng);
+    let final_pwd = String::from_utf8(password)?;
+    println!("{:?}", final_pwd);
+
+    let estimate = zxcvbn(&final_pwd, &[]).unwrap();
+    println!("score: {:?}", estimate.score());
     anyhow::Ok(())
 }
