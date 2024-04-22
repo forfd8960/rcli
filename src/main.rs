@@ -19,5 +19,9 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
 
             process::process_csv(&csv_opts.input, output, csv_opts.format)
         }
+        opts::SubCommand::GenPass(opts) => {
+            println!("generate pwd opts: {:?}", opts);
+            anyhow::Ok(())
+        }
     }
 }
