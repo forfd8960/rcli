@@ -2,8 +2,11 @@ use std::fs;
 
 use csv::Reader;
 use serde_json::Value;
+use serde_yaml;
 
-pub fn process_csv(input: &str, output: &str) -> anyhow::Result<()> {
+use crate::opts::OutputFormat;
+
+pub fn process_csv(input: &str, output: String, format: OutputFormat) -> anyhow::Result<()> {
     let mut reader = Reader::from_path(input)?;
     let mut data = Vec::with_capacity(128);
     let headers = reader.headers()?.clone();
@@ -11,12 +14,16 @@ pub fn process_csv(input: &str, output: &str) -> anyhow::Result<()> {
 
     for record in reader.records() {
         let r = record?;
-        let json_value = headers.iter().zip(r.iter()).collect::<Value>();
-        data.push(json_value);
+        let value = headers.iter().zip(r.iter()).collect::<Value>();
+        data.push(value);
     }
 
-    let player_data = serde_json::to_string_pretty(&data)?;
-    fs::write(output, player_data)?;
+    let content = match format {
+        OutputFormat::Json => serde_json::to_string_pretty(&data)?,
+        OutputFormat::Yaml => serde_yaml::to_string(&data)?,
+    };
+
+    fs::write(output, content)?;
 
     anyhow::Ok(())
 }

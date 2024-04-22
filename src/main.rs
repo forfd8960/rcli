@@ -10,6 +10,14 @@ fn main() -> anyhow::Result<()> {
 
 fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
     match opts.cmd {
-        opts::SubCommand::Csv(csv_opts) => process::process_csv(&csv_opts.input, &csv_opts.output),
+        opts::SubCommand::Csv(csv_opts) => {
+            let output = if let Some(output) = csv_opts.output {
+                output.clone()
+            } else {
+                format!("output.{}", csv_opts.format)
+            };
+
+            process::process_csv(&csv_opts.input, output, csv_opts.format)
+        }
     }
 }
