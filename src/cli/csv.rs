@@ -4,6 +4,8 @@ use std::str::FromStr;
 use anyhow::anyhow;
 use clap::Parser;
 
+use crate::cli::verify_input;
+
 #[derive(Debug, Parser)]
 pub struct CsvOpts {
     #[arg(short, long, value_parser = verify_input)]
@@ -22,15 +24,6 @@ pub struct CsvOpts {
 pub enum OutputFormat {
     Json,
     Yaml,
-}
-
-// clap value validation
-fn verify_input(f: &str) -> std::result::Result<String, &'static str> {
-    if std::path::Path::new(f).exists() {
-        Ok(f.into())
-    } else {
-        Err("File is not exists")
-    }
 }
 
 fn parse_format(f: &str) -> std::result::Result<OutputFormat, anyhow::Error> {
