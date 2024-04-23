@@ -1,7 +1,7 @@
 use rand::seq::SliceRandom;
 use zxcvbn::zxcvbn;
 
-use crate::opts::GenPassOpts;
+use crate::cli::genpass::GenPassOpts;
 
 const UPPERCHARS: &[u8] = b"ABCDEFGHJKLMNOPQRSTUVWXYZ";
 const LOWERCHARS: &[u8] = b"abcdefghijkmnopqrstuvwxyz";
@@ -42,6 +42,6 @@ pub fn generate_password(opts: GenPassOpts) -> anyhow::Result<()> {
     println!("{:?}", final_pwd);
 
     let estimate = zxcvbn(&final_pwd, &[]).unwrap();
-    println!("score: {:?}", estimate.score());
+    eprintln!("score: {:?}", estimate.score());
     anyhow::Ok(())
 }

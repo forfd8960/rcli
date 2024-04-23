@@ -1,7 +1,8 @@
 use anyhow::{self};
+use base64::{engine::general_purpose, Engine};
 use clap::Parser;
 use rcli::{
-    opts,
+    cli::{base64::Base64SubCommand, opts},
     process::{csv_convert, gen_pass},
 };
 
@@ -26,5 +27,17 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
             println!("generate pwd opts: {:?}", opts);
             gen_pass::generate_password(opts)
         }
+        opts::SubCommand::Base64(sub_cmd) => match sub_cmd {
+            Base64SubCommand::Encode(encode_opts) => {
+                let encode = general_purpose::STANDARD.encode(encode_opts.input);
+                println!("encode: {:?}", encode);
+                anyhow::Ok(())
+            }
+            Base64SubCommand::Decode(decode_opts) => {
+                let decode = general_purpose::STANDARD.decode(decode_opts.input);
+                println!("decode: {:?}", decode);
+                anyhow::Ok(())
+            }
+        },
     }
 }

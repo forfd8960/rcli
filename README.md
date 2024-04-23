@@ -65,3 +65,15 @@ warning: unused manifest key: package.author
      Running `target/debug/rcli csv -i test.csv`
 error: invalid value 'test.csv' for '--input <INPUT>': File is not exists
 ```
+
+## Base64
+
+```sh
+❯ cargo run -- base64 encode -i abc
+warning: unused manifest key: package.author
+   Compiling rcli v0.1.0
+    Finished dev [unoptimized + debuginfo] target(s) in 1.28s
+     Running `target/debug/rcli base64 encode -i abc`
+Opts { cmd: Base64(Encode(Base64EncodeOpts { input: "abc" })) }
+encode: "YWJj"
+```
