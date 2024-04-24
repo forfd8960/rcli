@@ -34,5 +34,9 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
                 process::base64::decode(&decode_opts.input, decode_opts.format)
             }
         },
+        opts::SubCommand::Text(sub_cmd) => {
+            println!("opts: {:?}", sub_cmd);
+            anyhow::Ok(())
+        }
     }
 }
