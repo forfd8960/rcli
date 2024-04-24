@@ -141,3 +141,18 @@ Opts { cmd: Base64(Decode(Base64DecodeOpts { input: "-", format: UrlSafe })) }
 SEhICgodecode: [72, 72, 72, 10, 10]
 decode_data: HHH
 ```
+
+## Text Sign
+
+### Run
+
+```sh
+❯ cargo run -- text sign --key fixtures/blake3.txt
+    Finished dev [unoptimized + debuginfo] target(s) in 0.12s
+     Running `target/debug/rcli text sign --key fixtures/blake3.txt`
+Opts { cmd: Text(Sign(TextSignOpts { input: "-", key: "fixtures/blake3.txt", format: Blake3 })) }
+opts: Sign(TextSignOpts { input: "-", key: "fixtures/blake3.txt", format: Blake3 })
+ABC
+^D
+"fKHJVYu4VkAaRkP9j9CzCQ7lsa2QfjotDH5zGmAo-sk"
+```

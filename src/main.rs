@@ -1,8 +1,8 @@
 use anyhow::{self};
 use clap::Parser;
 use rcli::{
-    cli::{base64::Base64SubCommand, opts},
-    process::{self, csv_convert, gen_pass},
+    cli::{base64::Base64SubCommand, opts, text::TextSubCommand},
+    process::{self, csv_convert, gen_pass, text::process_sign},
 };
 
 fn main() -> anyhow::Result<()> {
@@ -36,6 +36,11 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
         },
         opts::SubCommand::Text(sub_cmd) => {
             println!("opts: {:?}", sub_cmd);
+            match sub_cmd {
+                TextSubCommand::Sign(opts) => process_sign(opts)?,
+                TextSubCommand::Verify(_) => {}
+                TextSubCommand::GenerateKey => {}
+            }
             anyhow::Ok(())
         }
     }
