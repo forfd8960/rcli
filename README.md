@@ -77,3 +77,67 @@ warning: unused manifest key: package.author
 Opts { cmd: Base64(Encode(Base64EncodeOpts { input: "abc" })) }
 encode: "YWJj"
 ```
+
+### How to convert to same type while if else returns different data type
+
+```rust
+let reader: Box<dyn Read> = if input == "-" {
+        Box::new(std::io::stdin())
+    } else {
+        Box::new(std::fs::File::open(input)?)
+    };
+```
+
+### Run encode
+
+```sh
+❯ cargo run -- base64 encode --input -
+warning: unused manifest key: package.author
+    Finished dev [unoptimized + debuginfo] target(s) in 0.15s
+     Running `target/debug/rcli base64 encode --input -`
+Opts { cmd: Base64(Encode(Base64EncodeOpts { input: "-", format: Standard })) }
+xyz^D
+encode: eHl6Cg==
+
+❯ cargo run -- base64 encode --input - --format url_safe
+warning: unused manifest key: package.author
+    Finished dev [unoptimized + debuginfo] target(s) in 0.13s
+     Running `target/debug/rcli base64 encode --input - --format url_safe`
+Opts { cmd: Base64(Encode(Base64EncodeOpts { input: "-", format: UrlSafe })) }
+X_Y_<html>encode: WF9ZXzxodG1sPg==
+
+❯ cargo run -- base64 encode --input Cargo.toml --format url_safe
+
+```
+
+### Run decode
+
+```sh
+❯ cargo run -- base64 decode --input - --format url_safe
+warning: unused manifest key: package.author
+    Finished dev [unoptimized + debuginfo] target(s) in 0.13s
+     Running `target/debug/rcli base64 decode --input - --format url_safe`
+Opts { cmd: Base64(Decode(Base64DecodeOpts { input: "-", format: UrlSafe })) }
+SGVsbG8K^D
+
+decode: [72, 101, 108, 108, 111, 10]
+decode_data: Hello
+
+
+❯ cargo run -- base64 encode --input - --format url_safe
+warning: unused manifest key: package.author
+    Finished dev [unoptimized + debuginfo] target(s) in 1.36s
+     Running `target/debug/rcli base64 encode --input - --format url_safe`
+Opts { cmd: Base64(Encode(Base64EncodeOpts { input: "-", format: UrlSafe })) }
+HHH^D
+
+encode: SEhICgo
+
+~/Documents/github/forfd8960/rcli main*
+❯ cargo run -- base64 decode --input - --format url_safe
+    Finished dev [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/rcli base64 decode --input - --format url_safe`
+Opts { cmd: Base64(Decode(Base64DecodeOpts { input: "-", format: UrlSafe })) }
+SEhICgodecode: [72, 72, 72, 10, 10]
+decode_data: HHH
+```

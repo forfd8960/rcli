@@ -27,8 +27,12 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
             gen_pass::generate_password(opts)
         }
         opts::SubCommand::Base64(sub_cmd) => match sub_cmd {
-            Base64SubCommand::Encode(encode_opts) => process::base64::encode(encode_opts.input),
-            Base64SubCommand::Decode(decode_opts) => process::base64::decode(decode_opts.input),
+            Base64SubCommand::Encode(encode_opts) => {
+                process::base64::encode(&encode_opts.input, encode_opts.format)
+            }
+            Base64SubCommand::Decode(decode_opts) => {
+                process::base64::decode(&decode_opts.input, decode_opts.format)
+            }
         },
     }
 }
