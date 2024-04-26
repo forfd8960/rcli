@@ -1,4 +1,4 @@
-use std::{fs, io::Read};
+use std::{fs, io::Read, path::Path};
 
 use base64::{engine::general_purpose, Engine};
 use ed25519_dalek::{ed25519::signature::Signer, Signature, SigningKey, VerifyingKey};
@@ -7,6 +7,12 @@ use crate::{
     cli::text::{TextSignFormat, TextSignOpts, TextVerifyOpts},
     utils,
 };
+
+trait KeyLoader {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self>
+    where
+        Self: Sized;
+}
 
 trait TextSign {
     fn sign(&self, reader: &mut dyn Read) -> anyhow::Result<Vec<u8>>;
@@ -21,11 +27,27 @@ pub struct Blake3 {
 }
 
 impl Blake3 {
-    fn try_new(file: &str) -> anyhow::Result<Self> {
-        let key = fs::read(file)?;
+    fn new(key: [u8; 32]) -> Self {
+        Self { key }
+    }
+
+    #[allow(dead_code)]
+    fn try_new(key: &[u8]) -> anyhow::Result<Self> {
         let key = &key[..32];
         let key = key.try_into()?;
-        anyhow::Ok(Self { key })
+        anyhow::Ok(Blake3::new(key))
+    }
+}
+
+impl KeyLoader for Blake3 {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        let key = fs::read(path)?;
+        let key = &key[..32];
+        let key = key.try_into()?;
+        anyhow::Ok(Blake3::new(key))
     }
 }
 
@@ -33,8 +55,51 @@ pub struct ED25519Signer {
     key: SigningKey,
 }
 
+impl ED25519Signer {
+    fn new(key: SigningKey) -> Self {
+        ED25519Signer { key }
+    }
+
+    fn try_new(key: &[u8]) -> anyhow::Result<Self> {
+        let sec_bytes = key.try_into()?;
+        let key: SigningKey = SigningKey::from_bytes(sec_bytes);
+        anyhow::Ok(ED25519Signer::new(key))
+    }
+}
+
+impl KeyLoader for ED25519Signer {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        let key = fs::read(path)?;
+        ED25519Signer::try_new(&key)
+    }
+}
+
 pub struct ED25519Verify {
     key: VerifyingKey,
+}
+
+impl ED25519Verify {
+    fn new(key: VerifyingKey) -> Self {
+        Self { key }
+    }
+
+    fn try_new(key: &[u8]) -> anyhow::Result<Self> {
+        let key = VerifyingKey::from_bytes(key.try_into()?)?;
+        anyhow::Ok(ED25519Verify::new(key))
+    }
+}
+
+impl KeyLoader for ED25519Verify {
+    fn load(path: impl AsRef<Path>) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        let key = fs::read(path)?;
+        ED25519Verify::try_new(&key)
+    }
 }
 
 pub fn process_sign(sign_opts: TextSignOpts) -> anyhow::Result<()> {
@@ -44,7 +109,7 @@ pub fn process_sign(sign_opts: TextSignOpts) -> anyhow::Result<()> {
 
     let sign = match sign_opts.format {
         TextSignFormat::Blake3 => {
-            let signer = Blake3::try_new(&sign_opts.key)?;
+            let signer = Blake3::load(&sign_opts.key)?;
             signer.sign(&mut reader)?
         }
         TextSignFormat::Ed25519 => {
