@@ -12,7 +12,7 @@ pub enum TextSubCommand {
     #[command(name = "verify", about = "")]
     Verify(TextVerifyOpts),
     #[command(name = "generate-key", about = "")]
-    GenerateKey,
+    GenerateKey(TextKeyGenerateOpts),
 }
 
 #[derive(Debug, Parser)]
@@ -43,6 +43,12 @@ pub struct TextVerifyOpts {
 pub enum TextSignFormat {
     Blake3,
     Ed25519,
+}
+
+#[derive(Debug, Parser)]
+pub struct TextKeyGenerateOpts {
+    #[arg(long, value_parser=parse_format, default_value = "blake3")]
+    pub format: TextSignFormat,
 }
 
 fn parse_format(format: &str) -> std::result::Result<TextSignFormat, anyhow::Error> {

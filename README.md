@@ -156,3 +156,19 @@ ABC
 ^D
 "fKHJVYu4VkAaRkP9j9CzCQ7lsa2QfjotDH5zGmAo-sk"
 ```
+
+## SigningKey::generate
+
+```rust
+fn generate() -> anyhow::Result<Vec<Vec<u8>>> {
+        let mut csprng = OsRng;
+        let sining_key = SigningKey::generate(&mut csprng);
+        anyhow::Ok(vec![])
+    }
+```
+
+Need use crate rand_core
+
+```sh
+cargo add ed25519_dalek --features rand_core
+```

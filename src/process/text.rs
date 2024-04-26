@@ -1,12 +1,19 @@
 use std::{fs, io::Read, path::Path};
 
-use base64::{engine::general_purpose, Engine};
+use base64::{
+    engine::general_purpose::{self, URL_SAFE_NO_PAD},
+    Engine,
+};
 use ed25519_dalek::{ed25519::signature::Signer, Signature, SigningKey, VerifyingKey};
+use rand::rngs::OsRng;
 
 use crate::{
+    cli::genpass,
     cli::text::{TextSignFormat, TextSignOpts, TextVerifyOpts},
     utils,
 };
+
+use super::gen_pass::generate_password;
 
 trait KeyLoader {
     fn load(path: impl AsRef<Path>) -> anyhow::Result<Self>
@@ -20,6 +27,10 @@ trait TextSign {
 
 trait TextVerify {
     fn verify(&self, reader: impl Read, sig: &[u8]) -> anyhow::Result<bool>;
+}
+
+pub trait KeyGenerator {
+    fn generate() -> anyhow::Result<Vec<Vec<u8>>>;
 }
 
 pub struct Blake3 {
@@ -113,7 +124,8 @@ pub fn process_sign(sign_opts: TextSignOpts) -> anyhow::Result<()> {
             signer.sign(&mut reader)?
         }
         TextSignFormat::Ed25519 => {
-            todo!()
+            let signer = ED25519Signer::load(&sign_opts.key)?;
+            signer.sign(&mut reader)?
         }
     };
 
@@ -122,7 +134,22 @@ pub fn process_sign(sign_opts: TextSignOpts) -> anyhow::Result<()> {
     anyhow::Ok(())
 }
 
-pub fn process_verify(_verify_opts: TextVerifyOpts) -> anyhow::Result<()> {
+pub fn process_verify(verify_opts: TextVerifyOpts) -> anyhow::Result<()> {
+    let mut reader = utils::get_reader(&verify_opts.input)?;
+    let sig = URL_SAFE_NO_PAD.decode(verify_opts.sig)?;
+
+    let verified = match verify_opts.format {
+        TextSignFormat::Blake3 => {
+            let verifier = Blake3::load(verify_opts.key)?;
+            verifier.verify(&mut reader, &sig)?
+        }
+        TextSignFormat::Ed25519 => {
+            let verifier = ED25519Verify::load(verify_opts.key)?;
+            verifier.verify(&mut reader, &sig)?
+        }
+    };
+
+    println!("{}", verified);
     anyhow::Ok(())
 }
 
@@ -140,7 +167,7 @@ impl TextVerify for Blake3 {
         let mut buf = Vec::new();
         let _ = reader.read_to_end(&mut buf);
 
-        let hash = blake3::hash(&buf);
+        let hash = blake3::keyed_hash(&self.key, &buf);
         let hash = hash.as_bytes();
         anyhow::Ok(hash == sig)
     }
@@ -163,5 +190,30 @@ impl TextVerify for ED25519Verify {
         let signature = Signature::from_bytes(sig.try_into()?);
         let verify_result = self.key.verify_strict(&buf, &signature).is_ok();
         anyhow::Ok(verify_result)
+    }
+}
+
+impl KeyGenerator for Blake3 {
+    fn generate() -> anyhow::Result<Vec<Vec<u8>>> {
+        let key = generate_password(genpass::GenPassOpts {
+            length: 32,
+            uppercase: true,
+            lowercase: true,
+            number: true,
+            symbol: true,
+        })?;
+        anyhow::Ok(vec![key.into_bytes()])
+    }
+}
+
+impl KeyGenerator for ED25519Signer {
+    fn generate() -> anyhow::Result<Vec<Vec<u8>>> {
+        let mut csprng = OsRng;
+        let signing_key = SigningKey::generate(&mut csprng);
+
+        let sk = signing_key.to_bytes().to_vec();
+        let vk = signing_key.verifying_key();
+
+        anyhow::Ok(vec![sk, vk.to_bytes().to_vec()])
     }
 }

@@ -8,7 +8,7 @@ const LOWERCHARS: &[u8] = b"abcdefghijkmnopqrstuvwxyz";
 const NUM: &[u8] = b"123456789";
 const SYMBOL: &[u8] = b"!@#$%^&*_";
 
-pub fn generate_password(opts: GenPassOpts) -> anyhow::Result<()> {
+pub fn generate_password(opts: GenPassOpts) -> anyhow::Result<String> {
     let mut rng = rand::thread_rng();
     let mut password = Vec::new();
     let mut chars = Vec::new();
@@ -39,9 +39,8 @@ pub fn generate_password(opts: GenPassOpts) -> anyhow::Result<()> {
 
     password.shuffle(&mut rng);
     let final_pwd = String::from_utf8(password)?;
-    println!("{:?}", final_pwd);
 
     let estimate = zxcvbn(&final_pwd, &[]).unwrap();
     eprintln!("score: {:?}", estimate.score());
-    anyhow::Ok(())
+    anyhow::Ok(final_pwd)
 }

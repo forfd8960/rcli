@@ -4,7 +4,7 @@ use base64::{engine::general_purpose, prelude::Engine};
 
 use crate::{cli::base64::Base64Format, utils};
 
-pub fn encode(input: &str, format: Base64Format) -> anyhow::Result<()> {
+pub fn encode(input: &str, format: Base64Format) -> anyhow::Result<String> {
     let mut reader = utils::get_reader(input)?;
 
     let mut buf = Vec::new();
@@ -15,11 +15,10 @@ pub fn encode(input: &str, format: Base64Format) -> anyhow::Result<()> {
         Base64Format::UrlSafe => general_purpose::URL_SAFE_NO_PAD.encode(buf),
     };
 
-    println!("{}", encode);
-    anyhow::Ok(())
+    anyhow::Ok(encode)
 }
 
-pub fn decode(input: &str, format: Base64Format) -> anyhow::Result<()> {
+pub fn decode(input: &str, format: Base64Format) -> anyhow::Result<Vec<u8>> {
     let mut reader = utils::get_reader(input)?;
 
     let mut buf = String::new();
@@ -31,7 +30,5 @@ pub fn decode(input: &str, format: Base64Format) -> anyhow::Result<()> {
         Base64Format::UrlSafe => general_purpose::URL_SAFE_NO_PAD.decode(buf)?,
     };
 
-    let decode_data = String::from_utf8(decode)?;
-    println!("{}", decode_data);
-    anyhow::Ok(())
+    anyhow::Ok(decode)
 }
