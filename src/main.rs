@@ -1,11 +1,14 @@
+use std::fs;
+
 use anyhow::{self};
 use clap::Parser;
 use rcli::{
-    cli::{base64::Base64SubCommand, opts, text::TextSubCommand},
-    process::{
-        self, csv_convert, gen_pass,
-        text::{process_sign, process_verify},
+    cli::{
+        base64::Base64SubCommand,
+        opts,
+        text::{TextSignFormat, TextSubCommand},
     },
+    process::{self, csv_convert, gen_pass, text},
 };
 
 fn main() -> anyhow::Result<()> {
@@ -47,10 +50,29 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
         opts::SubCommand::Text(sub_cmd) => {
             println!("opts: {:?}", sub_cmd);
             match sub_cmd {
-                TextSubCommand::Sign(opts) => process_sign(opts)?,
-                TextSubCommand::Verify(opts) => process_verify(opts)?,
+                TextSubCommand::Sign(opts) => {
+                    let signed = text::process_sign(opts)?;
+                    println!("{:?}", signed);
+                }
+                TextSubCommand::Verify(opts) => {
+                    let verified = text::process_verify(opts)?;
+                    println!("{}", verified);
+                }
                 TextSubCommand::GenerateKey(opts) => {
                     println!("{:?}", opts);
+                    let keys = text::process_generate(opts.format)?;
+                    match opts.format {
+                        TextSignFormat::Blake3 => {
+                            let name = opts.output.join("blake3.txt");
+                            let _ = fs::write(name, &keys[0]);
+                        }
+                        TextSignFormat::Ed25519 => {
+                            let name = &opts.output;
+                            let _ = fs::write(name.join("ed25519.sk"), &keys[0]);
+                            let _ = fs::write(name.join("ed25519.pk"), &keys[1]);
+                        }
+                    }
+                    println!("generate keys done~~~");
                 }
             }
             anyhow::Ok(())

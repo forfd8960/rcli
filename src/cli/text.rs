@@ -1,9 +1,9 @@
 use anyhow::anyhow;
 use clap::Parser;
-use std::fmt;
 use std::str::FromStr;
+use std::{fmt, path::PathBuf};
 
-use super::verify_input;
+use super::{verify_input, verify_output};
 
 #[derive(Debug, Parser)]
 pub enum TextSubCommand {
@@ -11,7 +11,7 @@ pub enum TextSubCommand {
     Sign(TextSignOpts),
     #[command(name = "verify", about = "")]
     Verify(TextVerifyOpts),
-    #[command(name = "generate-key", about = "")]
+    #[command(name = "generate", about = "")]
     GenerateKey(TextKeyGenerateOpts),
 }
 
@@ -49,6 +49,8 @@ pub enum TextSignFormat {
 pub struct TextKeyGenerateOpts {
     #[arg(long, value_parser=parse_format, default_value = "blake3")]
     pub format: TextSignFormat,
+    #[arg(short, long, value_parser = verify_output)]
+    pub output: PathBuf,
 }
 
 fn parse_format(format: &str) -> std::result::Result<TextSignFormat, anyhow::Error> {

@@ -113,46 +113,6 @@ impl KeyLoader for ED25519Verify {
     }
 }
 
-pub fn process_sign(sign_opts: TextSignOpts) -> anyhow::Result<()> {
-    let mut reader = utils::get_reader(&sign_opts.input)?;
-    let mut buf = Vec::new();
-    let _ = reader.read_to_end(&mut buf);
-
-    let sign = match sign_opts.format {
-        TextSignFormat::Blake3 => {
-            let signer = Blake3::load(&sign_opts.key)?;
-            signer.sign(&mut reader)?
-        }
-        TextSignFormat::Ed25519 => {
-            let signer = ED25519Signer::load(&sign_opts.key)?;
-            signer.sign(&mut reader)?
-        }
-    };
-
-    let signed = general_purpose::URL_SAFE_NO_PAD.encode(sign);
-    println!("{:?}", signed);
-    anyhow::Ok(())
-}
-
-pub fn process_verify(verify_opts: TextVerifyOpts) -> anyhow::Result<()> {
-    let mut reader = utils::get_reader(&verify_opts.input)?;
-    let sig = URL_SAFE_NO_PAD.decode(verify_opts.sig)?;
-
-    let verified = match verify_opts.format {
-        TextSignFormat::Blake3 => {
-            let verifier = Blake3::load(verify_opts.key)?;
-            verifier.verify(&mut reader, &sig)?
-        }
-        TextSignFormat::Ed25519 => {
-            let verifier = ED25519Verify::load(verify_opts.key)?;
-            verifier.verify(&mut reader, &sig)?
-        }
-    };
-
-    println!("{}", verified);
-    anyhow::Ok(())
-}
-
 impl TextSign for Blake3 {
     fn sign(&self, reader: &mut dyn Read) -> anyhow::Result<Vec<u8>> {
         let mut buf = Vec::new();
@@ -216,4 +176,51 @@ impl KeyGenerator for ED25519Signer {
 
         anyhow::Ok(vec![sk, vk.to_bytes().to_vec()])
     }
+}
+
+pub fn process_sign(sign_opts: TextSignOpts) -> anyhow::Result<String> {
+    let mut reader = utils::get_reader(&sign_opts.input)?;
+    let mut buf = Vec::new();
+    let _ = reader.read_to_end(&mut buf);
+
+    let sign = match sign_opts.format {
+        TextSignFormat::Blake3 => {
+            let signer = Blake3::load(&sign_opts.key)?;
+            signer.sign(&mut reader)?
+        }
+        TextSignFormat::Ed25519 => {
+            let signer = ED25519Signer::load(&sign_opts.key)?;
+            signer.sign(&mut reader)?
+        }
+    };
+
+    let signed = general_purpose::URL_SAFE_NO_PAD.encode(sign);
+    anyhow::Ok(signed)
+}
+
+pub fn process_verify(verify_opts: TextVerifyOpts) -> anyhow::Result<bool> {
+    let mut reader = utils::get_reader(&verify_opts.input)?;
+    let sig = URL_SAFE_NO_PAD.decode(verify_opts.sig)?;
+
+    let verified = match verify_opts.format {
+        TextSignFormat::Blake3 => {
+            let verifier = Blake3::load(verify_opts.key)?;
+            verifier.verify(&mut reader, &sig)?
+        }
+        TextSignFormat::Ed25519 => {
+            let verifier = ED25519Verify::load(verify_opts.key)?;
+            verifier.verify(&mut reader, &sig)?
+        }
+    };
+
+    anyhow::Ok(verified)
+}
+
+pub fn process_generate(format: TextSignFormat) -> anyhow::Result<Vec<Vec<u8>>> {
+    let keys = match format {
+        TextSignFormat::Blake3 => Blake3::generate()?,
+        TextSignFormat::Ed25519 => ED25519Signer::generate()?,
+    };
+
+    anyhow::Ok(keys)
 }
