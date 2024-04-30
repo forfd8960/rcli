@@ -5,10 +5,11 @@ use clap::Parser;
 use rcli::{
     cli::{
         base64::Base64SubCommand,
+        http::HttpSubCommand,
         opts,
         text::{TextSignFormat, TextSubCommand},
     },
-    process::{self, csv_convert, gen_pass, text},
+    process::{self, text},
 };
 
 fn main() -> anyhow::Result<()> {
@@ -26,25 +27,22 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
                 format!("output.{}", csv_opts.format)
             };
 
-            csv_convert::process_csv(&csv_opts.input, output, csv_opts.format)
+            process::csv_convert::process_csv(&csv_opts.input, output, csv_opts.format)?
         }
         opts::SubCommand::GenPass(opts) => {
             println!("generate pwd opts: {:?}", opts);
-            let pwd = gen_pass::generate_password(opts)?;
+            let pwd = process::gen_pass::generate_password(opts)?;
             println!("{}", pwd);
-            anyhow::Ok(())
         }
         opts::SubCommand::Base64(sub_cmd) => match sub_cmd {
             Base64SubCommand::Encode(encode_opts) => {
                 let encoded = process::base64::encode(&encode_opts.input, encode_opts.format)?;
                 println!("{:?}", encoded);
-                anyhow::Ok(())
             }
             Base64SubCommand::Decode(decode_opts) => {
                 let decoded = process::base64::decode(&decode_opts.input, decode_opts.format)?;
                 let decode_data: String = String::from_utf8(decoded)?;
                 println!("{}", decode_data);
-                anyhow::Ok(())
             }
         },
         opts::SubCommand::Text(sub_cmd) => {
@@ -75,7 +73,15 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
                     println!("generate keys done~~~");
                 }
             }
-            anyhow::Ok(())
+        }
+        opts::SubCommand::Http(sub_cmd) => {
+            println!("http sub_command: {:?}", sub_cmd);
+            match sub_cmd {
+                HttpSubCommand::Serve(opts) => {
+                    println!("serve at: http://0.0.0.0:{}", opts.port);
+                }
+            }
         }
     }
+    anyhow::Ok(())
 }

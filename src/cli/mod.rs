@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 pub mod base64;
 pub mod csv;
 pub mod genpass;
+pub mod http;
 pub mod opts;
 pub mod text;
 

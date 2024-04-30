@@ -1,6 +1,9 @@
 use clap::Parser;
 
-use super::{base64::Base64SubCommand, csv::CsvOpts, genpass::GenPassOpts, text::TextSubCommand};
+use super::{
+    base64::Base64SubCommand, csv::CsvOpts, genpass::GenPassOpts, http::HttpSubCommand,
+    text::TextSubCommand,
+};
 
 // rcli csv -i input.csv -o output.json --header -d ','
 #[derive(Debug, Parser)]
@@ -20,4 +23,6 @@ pub enum SubCommand {
     Base64(Base64SubCommand),
     #[command(subcommand)]
     Text(TextSubCommand),
+    #[command(subcommand)]
+    Http(HttpSubCommand),
 }
