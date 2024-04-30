@@ -9,7 +9,7 @@ use rcli::{
         opts,
         text::{TextSignFormat, TextSubCommand},
     },
-    process::{self, text},
+    process::{self, http_serve, text},
 };
 
 fn main() -> anyhow::Result<()> {
@@ -19,6 +19,8 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
+    tracing_subscriber::fmt::init(); // RUST_LOG=debug cargo run
+
     match opts.cmd {
         opts::SubCommand::Csv(csv_opts) => {
             let output = if let Some(output) = csv_opts.output {
@@ -79,6 +81,7 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
             match sub_cmd {
                 HttpSubCommand::Serve(opts) => {
                     println!("serve at: http://0.0.0.0:{}", opts.port);
+                    http_serve::process_http_serve(&opts.dir, opts.port)?;
                 }
             }
         }

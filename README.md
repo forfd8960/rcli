@@ -172,3 +172,14 @@ Need use crate rand_core
 ```sh
 cargo add ed25519_dalek --features rand_core
 ```
+
+## HTTP Serve
+
+```sh
+❯ RUST_LOG=debug cargo run -- http serve
+
+Opts { cmd: Http(Serve(HttpServeOpts { dir: ".", port: 8080 })) }
+http sub_command: Serve(HttpServeOpts { dir: ".", port: 8080 })
+serve at: http://0.0.0.0:8080
+2024-04-30T14:09:27.064584Z  INFO rcli::process::http_serve: serving: "." on port: 8080
+```
