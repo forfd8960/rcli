@@ -183,3 +183,6 @@ http sub_command: Serve(HttpServeOpts { dir: ".", port: 8080 })
 serve at: http://0.0.0.0:8080
 2024-04-30T14:09:27.064584Z  INFO rcli::process::http_serve: serving: "." on port: 8080
 ```
+
+- send http test
+  ![test index](test_index.png)

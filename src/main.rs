@@ -12,13 +12,14 @@ use rcli::{
     process::{self, http_serve, text},
 };
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let opts = opts::Opts::parse();
     println!("{:?}", opts);
-    handle_opts(opts)
+    handle_opts(opts).await
 }
 
-fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
+async fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
     tracing_subscriber::fmt::init(); // RUST_LOG=debug cargo run
 
     match opts.cmd {
@@ -81,7 +82,7 @@ fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
             match sub_cmd {
                 HttpSubCommand::Serve(opts) => {
                     println!("serve at: http://0.0.0.0:{}", opts.port);
-                    http_serve::process_http_serve(&opts.dir, opts.port)?;
+                    http_serve::process_http_serve(&opts.dir, opts.port).await?;
                 }
             }
         }
