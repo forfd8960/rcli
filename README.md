@@ -186,3 +186,6 @@ serve at: http://0.0.0.0:8080
 
 - send http test
   ![test index](test_index.png)
+
+- read file
+  ![alt text](read_file.png)

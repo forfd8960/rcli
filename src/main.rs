@@ -82,7 +82,7 @@ async fn handle_opts(opts: opts::Opts) -> anyhow::Result<()> {
             match sub_cmd {
                 HttpSubCommand::Serve(opts) => {
                     println!("serve at: http://0.0.0.0:{}", opts.port);
-                    http_serve::process_http_serve(&opts.dir, opts.port).await?;
+                    http_serve::process_http_serve(opts.dir, opts.port).await?;
                 }
             }
         }
