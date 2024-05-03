@@ -1,3 +1,17 @@
 ### test index page
 
-GET http://localhost:8080/abc.toml
+GET http://localhost:8080/Cargo.toml
+
+### Test tower
+GET http://localhost:8080/tower/Cargo.toml
+Range: bytes=0-150
+
+
+### Test tower2
+GET http://localhost:8080/Cargo.toml
+Range: bytes=150-
+
+### Test tower3
+GET http://localhost:8080/Cargo.toml
+Accept-Encoding: gzip
+Range: bytes=0-150
